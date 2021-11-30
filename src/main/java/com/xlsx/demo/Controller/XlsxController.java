@@ -1,6 +1,7 @@
 package com.xlsx.demo.Controller;
 
 import com.xlsx.demo.Service.XlsxService;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +16,7 @@ public class XlsxController {
   XlsxService xlsxService;
 
   @PostMapping("/upload")
-  public String convertXlsxFiles(MultipartHttpServletRequest request) throws IOException {
+  public String convertXlsxFiles(MultipartHttpServletRequest request) throws IOException, InvalidFormatException {
     xlsxService.convertXlsxFile(request);
     return "uploaded";
   }
