@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  TextField,
 } from "@material-ui/core";
 import PreviewFile from "./example.png";
 import SourceFile from "./source.png";
@@ -32,10 +33,16 @@ function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sourceDialogOpen, setSourceDialogOpen]=useState(false);
   const [loading, setLoading] = useState(false);
+  const [bank, setBank] = useState("");
+  const [accountNumber, setAccountNumber]=useState("");
+  const [accountTo, setAccountTo]=useState("");
   function downloadZipFile(template: File, rawData: File) {
     const formData = new FormData();
     formData.append("template", template);
     formData.append("source", rawData);
+    formData.append("bank",bank);
+    formData.append("account",accountNumber);
+    formData.append("accountTo",accountTo);
     setLoading(true);
     SpringAxios.post(`/upload`, formData)
       .then((res: any) => {
@@ -213,7 +220,14 @@ function App() {
             </Button>
           </DialogActions>
         </Dialog>
-        <div style={{ paddingTop: 280 }}>
+        <div>
+        <div style={{ paddingTop: 200 }}>
+           <div><TextField label="은행명 입력" value = {bank} onChange={(e)=>{setBank(e.target.value)}}/></div>
+           <div style={{marginTop:5}}><TextField label = "계좌번호 From" value={accountNumber} onChange={(e)=>{setAccountNumber(e.target.value)}}/></div>
+           <div style={{marginTop:5}}><TextField label = "계좌번호 To" value={accountTo} onChange={(e)=>{setAccountTo(e.target.value)}}/></div>
+          </div>
+        </div>
+        <div style={{ paddingTop: 80 }}>
           <Button
             color="primary"
             disabled={rawDataFile == undefined || templateFile == undefined}
