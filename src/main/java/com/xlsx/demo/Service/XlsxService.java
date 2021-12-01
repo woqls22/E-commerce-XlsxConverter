@@ -64,6 +64,8 @@ public class XlsxService {
         XSSFRow templateRow = sheet1.getRow(1);
         int rowCount = 0;
         int sheet1Rows = sheet1.getPhysicalNumberOfRows();
+        String nFormula = "TEXT($B$4,\"MM월 DD일 씨티은행 30908053--->30909132\")";
+        boolean isUpdated = false;
         for (rowCount = 6; rowCount <= sheet1Rows; rowCount++) {
           templateRow = sheet1.getRow(rowCount);
           if (templateRow.getCell(4).getCellType() == XSSFCell.CELL_TYPE_BLANK) {
@@ -71,14 +73,20 @@ public class XlsxService {
           } else if (templateRow.getCell(4).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
             templateRow.getCell(4).setCellFormula(templateRow.getCell(4).getCellFormula());
           }
+          if (templateRow.getCell(13).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
+            templateRow.getCell(13).setCellFormula(nFormula);
+          }
         }
         XSSFCell cell1 = templateRow.createCell(4);
         XSSFCell cell2 = templateRow.createCell(9);
+        XSSFCell cell3 = templateRow.createCell(13);
         cell1.setCellType(Cell.CELL_TYPE_STRING);
         cell2.setCellType(Cell.CELL_TYPE_NUMERIC);
+        cell3.setCellType(Cell.CELL_TYPE_FORMULA);
         cell1.setCellFormula("TEXT($B$4,\"MM월 DD일\")");
         cell2.setCellValue(decFormat.format(secondItemVal));
         cell2.setCellStyle(cellStyle);
+        cell3.setCellFormula(nFormula);
 
 
         File outputDir = new File(attach_path + output_path);
@@ -180,7 +188,7 @@ public class XlsxService {
     return rootFile.delete();
   }
   public static void makeZipFromDir() throws IOException {
-    String dir = "/home/ubuntu/res/xlsxDemo/output";
+    String dir = "/Users/leejaebeen/XlsxConverter/res/output";
     String zipName="output.zip";
     File directory = new File(dir + File.separator);
     if (!directory.isDirectory()) {
