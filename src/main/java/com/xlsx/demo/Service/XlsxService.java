@@ -1,50 +1,45 @@
 package com.xlsx.demo.Service;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.DecimalFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class XlsxService {
   @Value("${spring.servlet.multipart.location}")
   private String attach_path;
-  private String output_path="output/";
-  public void convertXlsxFile(MultipartHttpServletRequest request) throws IOException, InvalidFormatException {
+  private String output_path = "output/";
+
+  public void convertXlsxFile(MultipartHttpServletRequest request, HttpServletRequest httpServletRequest, HttpServletResponse response) throws IOException, InvalidFormatException {
     File fileDir = new File(attach_path);
-    if(!fileDir.exists()){
+    if (!fileDir.exists()) {
       fileDir.mkdirs();
     }
+    DecimalFormat decFormat = new DecimalFormat("###,###");
     MultipartFile templateMf = request.getFile("template");
     MultipartFile sourceMf = request.getFile("source");
 
     String templateFilename = templateMf.getOriginalFilename();
     String sourceFilename1 = sourceMf.getOriginalFilename();
-    templateFilename = attach_path + templateFilename.replaceAll(" ","");
-    sourceFilename1=attach_path + sourceFilename1.replaceAll(" ","");
-    templateMf.transferTo(new File( templateFilename));
-    sourceMf.transferTo(new File( sourceFilename1));
+    templateFilename = attach_path + templateFilename.replaceAll(" ", "");
+    sourceFilename1 = attach_path + sourceFilename1.replaceAll(" ", "");
+    templateMf.transferTo(new File(templateFilename));
+    sourceMf.transferTo(new File(sourceFilename1));
 
     FileInputStream source = new FileInputStream(sourceFilename1);
     XSSFWorkbook sourceWorkbook = new XSSFWorkbook(source);
-
     XSSFSheet sheet = sourceWorkbook.getSheetAt(0);
     int rows = sheet.getPhysicalNumberOfRows(); // 해당 시트의 행 개수
     //source file의 row마다 순회
@@ -52,24 +47,27 @@ public class XlsxService {
       XSSFRow row = sheet.getRow(rowIdx);
       FileInputStream template = new FileInputStream(templateFilename);
       XSSFWorkbook templateWorkbook = new XSSFWorkbook(template);
-      if(row !=null){ // row에 값 존재할 경우
+      XSSFCellStyle cellStyle = templateWorkbook.createCellStyle();
+      XSSFDataFormat format = templateWorkbook.createDataFormat();
+      cellStyle.setDataFormat(format.getFormat("#,##0_);(#,##0)"));
+      if (row != null) { // row에 값 존재할 경우
         XSSFCell firstItem = row.getCell(1);
         XSSFCell secondItem = row.getCell(3);
-        String firstItemVal=firstItem.getStringCellValue();
-        int secondItemVal= (int)(secondItem.getNumericCellValue());
-        System.out.println("Date : "+firstItemVal+", Cost : "+secondItemVal);
+        String firstItemVal = firstItem.getStringCellValue();
+        int secondItemVal = (int) (secondItem.getNumericCellValue());
+        System.out.println("Date : " + firstItemVal + ", Cost : " + secondItemVal);
 
         XSSFSheet sheet1 = templateWorkbook.getSheetAt(1);
         sheet1.getRow(3).getCell(1).setCellValue(convertDateStringToDate(firstItemVal));
         sheet1.getRow(3).getCell(2).setCellFormula("B4");
-        XSSFRow templateRow= sheet1.getRow(1);
-        int rowCount=0;
+        XSSFRow templateRow = sheet1.getRow(1);
+        int rowCount = 0;
         int sheet1Rows = sheet1.getPhysicalNumberOfRows();
-        for(rowCount = 6; rowCount<=sheet1Rows;rowCount++){
+        for (rowCount = 6; rowCount <= sheet1Rows; rowCount++) {
           templateRow = sheet1.getRow(rowCount);
-          if(templateRow.getCell(4).getCellType()==XSSFCell.CELL_TYPE_BLANK){
+          if (templateRow.getCell(4).getCellType() == XSSFCell.CELL_TYPE_BLANK) {
             break;
-          }else if (templateRow.getCell(4).getCellType()==XSSFCell.CELL_TYPE_FORMULA){
+          } else if (templateRow.getCell(4).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
             templateRow.getCell(4).setCellFormula(templateRow.getCell(4).getCellFormula());
           }
         }
@@ -78,19 +76,45 @@ public class XlsxService {
         cell1.setCellType(Cell.CELL_TYPE_STRING);
         cell2.setCellType(Cell.CELL_TYPE_NUMERIC);
         cell1.setCellFormula("TEXT($B$4,\"MM월 DD일\")");
-        cell2.setCellValue(secondItemVal);
+        cell2.setCellValue(decFormat.format(secondItemVal));
+        cell2.setCellStyle(cellStyle);
 
-        File outputDir = new File(attach_path+output_path);
-        if(!outputDir.exists()){
+
+        File outputDir = new File(attach_path + output_path);
+        if (!outputDir.exists()) {
           outputDir.mkdirs();
         }
-        FileOutputStream fileOut = new FileOutputStream(outputDir+"/"+firstItemVal+".xlsx");
+        FileOutputStream fileOut = new FileOutputStream(outputDir + "/" + firstItemVal + ".xlsx");
         templateWorkbook.write(fileOut);
         fileOut.close();
       }
     }
+    makeZipFromDir();
+    File outputDir = new File(attach_path+output_path);
+    deleteFilesRecursively(outputDir);
+    File downloadFile = new File(attach_path+"output.zip");
+    long fileLength = downloadFile.length();
+    response.setHeader("Content-Disposition", "attachment; filename=output.zip;");
+    response.setHeader("Content-Transfer-Encoding", "binary");
+    response.setHeader("Content-Type", "text/xlsx");
+    response.setHeader("Content-Length", "" + fileLength);
+    response.setHeader("Pragma", "no-cache;");
+    response.setHeader("Expires", "-1;");
+    try (
+        FileInputStream fis = new FileInputStream(attach_path+"output.zip");
+        OutputStream out = response.getOutputStream();
+    ) {
+      int readCount = 0;
+      byte[] buffer = new byte[1024];
+      while ((readCount = fis.read(buffer)) != -1) {
+        out.write(buffer, 0, readCount);
+      }
+    } catch (Exception ex) {
+      throw new RuntimeException("Err] output.zip - xlsx File Download Error");
+    }
   }
-  public String convertDateStr(String item){
+
+  public String convertDateStr(String item) {
     String[] split = item.split("\\.");
     String year = split[0];
     String month = split[1];
@@ -99,7 +123,8 @@ public class XlsxService {
     StringBuilder append = stringBuilder.append(month).append("월").append(" ").append(day).append("일");
     return append.toString();
   }
-  public String convertDateWithSlash(String item){
+
+  public String convertDateWithSlash(String item) {
     String[] split = item.split("\\.");
     String year = split[0];
     String month = split[1];
@@ -108,13 +133,52 @@ public class XlsxService {
     StringBuilder append = stringBuilder.append(month).append("/").append(day).append("/").append(year);
     return append.toString();
   }
-  public Calendar convertDateStringToDate(String item){
+
+  public Calendar convertDateStringToDate(String item) {
     String[] split = item.split("\\.");
     String year = split[0];
     String month = split[1];
     String day = split[2];
     Calendar date = Calendar.getInstance();
-    date.set(Integer.parseInt(year),Integer.parseInt(month)-1,Integer.parseInt(day));
+    date.set(Integer.parseInt(year), Integer.parseInt(month) - 1, Integer.parseInt(day));
     return date;
   }
+  static boolean deleteFilesRecursively(File rootFile) {
+    File[] allFiles = rootFile.listFiles();
+    if (allFiles != null) {
+      for (File file : allFiles) {
+        deleteFilesRecursively(file);
+      }
+    }
+    System.out.println("Remove file: " + rootFile.getPath());
+    return rootFile.delete();
+  }
+  public static void makeZipFromDir() throws IOException {
+    String dir = "/home/ubuntu/res/xlsxDemo/output";
+    String zipName="output.zip";
+    File directory = new File(dir + File.separator);
+    if (!directory.isDirectory()) {
+      new IOException(dir + ": 폴더가 아님");
+    }
+    File zipFile = new File(directory.getParent(), zipName);
+    ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
+    System.out.println(zipFile.getAbsolutePath() + "생성중..");
+    File[] fileList = directory.listFiles();
+    byte[] buf = new byte[1024];
+    FileInputStream in = null;
+    for (File file : fileList) {
+      System.out.println(file.getAbsolutePath() + " : 압축파일에 추가중");
+      in = new FileInputStream(file.getAbsoluteFile());
+      zos.putNextEntry(new ZipEntry(file.getName()));
+      int len;
+      while ((len = in.read(buf)) > 0) {
+        zos.write(buf, 0, len);
+      }
+      zos.closeEntry();
+      in.close();
+    }
+    System.out.println(zipFile.getAbsolutePath() + "생성완료");
+    zos.close();
+  }
+
 }

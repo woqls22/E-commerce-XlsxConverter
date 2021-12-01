@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Controller
@@ -16,8 +18,8 @@ public class XlsxController {
   XlsxService xlsxService;
 
   @PostMapping("/upload")
-  public String convertXlsxFiles(MultipartHttpServletRequest request) throws IOException, InvalidFormatException {
-    xlsxService.convertXlsxFile(request);
+  public String convertXlsxFiles(MultipartHttpServletRequest multipartHttpServletRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, InvalidFormatException {
+    xlsxService.convertXlsxFile(multipartHttpServletRequest,request,response);
     return "uploaded";
   }
   @GetMapping("/hello")
