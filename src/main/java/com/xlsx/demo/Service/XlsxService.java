@@ -31,7 +31,9 @@ public class XlsxService {
     DecimalFormat decFormat = new DecimalFormat("###,###");
     MultipartFile templateMf = request.getFile("template");
     MultipartFile sourceMf = request.getFile("source");
-
+    String bank = request.getParameter("bank");
+    String account = request.getParameter("account");
+    String accpountTo=request.getParameter("accountTo");
     String templateFilename = templateMf.getOriginalFilename();
     String sourceFilename1 = sourceMf.getOriginalFilename();
     templateFilename = attach_path + templateFilename.replaceAll(" ", "");
@@ -64,7 +66,7 @@ public class XlsxService {
         XSSFRow templateRow = sheet1.getRow(1);
         int rowCount = 0;
         int sheet1Rows = sheet1.getPhysicalNumberOfRows();
-        String nFormula = "TEXT($B$4,\"MM월 DD일 씨티은행 30908053--->30909132\")";
+        String nFormula = "TEXT($B$4,\"MM월 DD일 \")&\""+bank+" "+account+"--->"+accpountTo+"\"";
         boolean isUpdated = false;
         for (rowCount = 6; rowCount <= sheet1Rows; rowCount++) {
           templateRow = sheet1.getRow(rowCount);
@@ -74,6 +76,7 @@ public class XlsxService {
             templateRow.getCell(4).setCellFormula(templateRow.getCell(4).getCellFormula());
           }
           if (templateRow.getCell(13).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
+            System.out.println(nFormula);
             templateRow.getCell(13).setCellFormula(nFormula);
           }
         }
@@ -82,7 +85,7 @@ public class XlsxService {
         XSSFCell cell3 = templateRow.createCell(13);
         cell1.setCellType(Cell.CELL_TYPE_STRING);
         cell2.setCellType(Cell.CELL_TYPE_NUMERIC);
-        cell3.setCellType(Cell.CELL_TYPE_FORMULA);
+        cell3.setCellType(Cell.CELL_TYPE_STRING);
         cell1.setCellFormula("TEXT($B$4,\"MM월 DD일\")");
         cell2.setCellValue(decFormat.format(secondItemVal));
         cell2.setCellStyle(cellStyle);
@@ -188,7 +191,7 @@ public class XlsxService {
     return rootFile.delete();
   }
   public static void makeZipFromDir() throws IOException {
-    String dir = "/Users/leejaebeen/XlsxConverter/res/output";
+    String dir = "/home/ubuntu/res/xlsxDemo/output";
     String zipName="output.zip";
     File directory = new File(dir + File.separator);
     if (!directory.isDirectory()) {
