@@ -49,6 +49,7 @@ function App() {
         window.location.assign("http://localhost:8000/download");
           setLoading(false);
       })
+//       z
       .catch(() => {
         setLoading(false);
         alert("Fail : Merge File");
