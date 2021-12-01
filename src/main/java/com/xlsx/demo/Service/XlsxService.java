@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -96,7 +97,7 @@ public class XlsxService {
     long fileLength = downloadFile.length();
     response.setHeader("Content-Disposition", "attachment; filename=output.zip;");
     response.setHeader("Content-Transfer-Encoding", "binary");
-    response.setHeader("Content-Type", "text/xlsx");
+    response.setHeader("Content-Type", "application/zip");
     response.setHeader("Content-Length", "" + fileLength);
     response.setHeader("Pragma", "no-cache;");
     response.setHeader("Expires", "-1;");
@@ -113,7 +114,32 @@ public class XlsxService {
       throw new RuntimeException("Err] output.zip - xlsx File Download Error");
     }
   }
+  public void zipFileDownload(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    response.setContentType("application/zip");
+    response.setHeader("Content-Disposition", "attachment; filename=\"" + "output.zip" + "\";");
+    System.out.println("ZipFile Download..");
+    FileInputStream fis = new FileInputStream(attach_path+"output.zip");
+    BufferedInputStream bis = new BufferedInputStream(fis);
+    ServletOutputStream so = response.getOutputStream();
+    BufferedOutputStream bos = new BufferedOutputStream(so);
 
+    byte[] data = new byte[2048];
+    int input = 0;
+
+    while ((input = bis.read(data)) != -1) {
+      bos.write(data, 0, input);
+      bos.flush();
+    }
+
+    if (bos != null)
+      bos.close();
+    if (bis != null)
+      bis.close();
+    if (so != null)
+      so.close();
+    if (fis != null)
+      fis.close();
+  }
   public String convertDateStr(String item) {
     String[] split = item.split("\\.");
     String year = split[0];
