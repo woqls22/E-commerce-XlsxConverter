@@ -57,7 +57,7 @@ function App() {
   }
   return (
     <>
-      <div className="App">
+      <div className="App" style={{marginRight:50, marginLeft:50, marginBottom: 150, marginTop:50}}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ marginTop: 15 }}>
             본 프로그램은 사전 템플릿에 최적화 되어있습니다. 파일 업로드 시
