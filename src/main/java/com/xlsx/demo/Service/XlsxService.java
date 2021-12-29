@@ -96,7 +96,7 @@ public class XlsxService {
         if (!outputDir.exists()) {
           outputDir.mkdirs();
         }
-        FileOutputStream fileOut = new FileOutputStream(outputDir + "/" + firstItemVal + ".xlsx");
+        FileOutputStream fileOut = new FileOutputStream(outputDir + "/" + firstItemVal.replaceAll("\\.","_") + ".xlsx");
         templateWorkbook.write(fileOut);
         fileOut.close();
       }
@@ -122,6 +122,7 @@ public class XlsxService {
         out.write(buffer, 0, readCount);
       }
     } catch (Exception ex) {
+      System.out.println(attach_path+"output.zip");
       throw new RuntimeException("Err] output.zip - xlsx File Download Error");
     }
   }
@@ -193,7 +194,8 @@ public class XlsxService {
   public static void makeZipFromDir() throws IOException {
 //   Macbook Env
 //   String dir = /Users/leejaebeen/XlsxConverter/res/output;
-    String dir = "/home/ubuntu/res/xlsxDemo/output";
+    String dir = "C://Users//woqls//Documents//xlsxDemo//output";
+//    String dir = "/home/ubuntu/res/xlsxDemo/output";
     String zipName="output.zip";
     File directory = new File(dir + File.separator);
     if (!directory.isDirectory()) {
