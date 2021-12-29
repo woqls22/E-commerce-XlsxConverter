@@ -15,7 +15,7 @@ import {
 import PreviewFile from "./example.png";
 import SourceFile from "./source.png";
 import axios from "axios";
-export const rootURL = "http://localhost:8000";
+export const rootURL = "http://114.200.215.69:8000";
 export const headers = {
   "Content-Type": "application/json",
 };
@@ -46,7 +46,7 @@ function App() {
     setLoading(true);
     SpringAxios.post(`/upload`, formData)
       .then((res: any) => {
-        window.location.assign("http://localhost:8000/download");
+        window.location.assign(`${rootURL}/download`);
           setLoading(false);
       })
 //       z
@@ -228,7 +228,7 @@ function App() {
            <div style={{marginTop:5}}><TextField label = "계좌번호 To" value={accountTo} onChange={(e)=>{setAccountTo(e.target.value)}}/></div>
           </div>
         </div>
-        <div style={{ paddingTop: 80 }}>
+        <div style={{ paddingTop: 80, marginBottom:80 }}>
           <Button
             color="primary"
             disabled={rawDataFile == undefined || templateFile == undefined}
