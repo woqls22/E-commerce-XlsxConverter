@@ -71,32 +71,44 @@ public class XlsxService {
         for (rowCount = 6; rowCount <= sheet1Rows; rowCount++) {
           templateRow = sheet1.getRow(rowCount);
           if (templateRow.getCell(4).getCellType() == XSSFCell.CELL_TYPE_BLANK) {
+            System.out.println("break at rowCount : "+rowCount);
             break;
-          } else if (templateRow.getCell(4).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
+          }else if (templateRow.getCell(4).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
             templateRow.getCell(4).setCellFormula(templateRow.getCell(4).getCellFormula());
           }
           if (templateRow.getCell(13).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
             System.out.println(nFormula);
             templateRow.getCell(13).setCellFormula(nFormula);
           }
+          if (templateRow.getCell(9).getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
+            System.out.println(secondItemVal+", "+templateRow.getCell(9).getNumericCellValue());
+            templateRow.getCell(9).setCellValue(decFormat.format(secondItemVal));
+          }
+          if (templateRow.getCell(9).getCellType() == XSSFCell.CELL_TYPE_FORMULA) {
+            templateRow.getCell(9).setCellType(XSSFCell.CELL_TYPE_NUMERIC);
+            templateRow.getCell(9).setCellValue(decFormat.format(secondItemVal));
+          }
         }
-        XSSFCell cell1 = templateRow.createCell(4);
-        XSSFCell cell2 = templateRow.createCell(9);
-        XSSFCell cell3 = templateRow.createCell(13);
-        cell1.setCellType(Cell.CELL_TYPE_STRING);
-        cell2.setCellType(Cell.CELL_TYPE_NUMERIC);
-        cell3.setCellType(Cell.CELL_TYPE_STRING);
-        cell1.setCellFormula("TEXT($B$4,\"MM월 DD일\")");
-        cell2.setCellValue(decFormat.format(secondItemVal));
-        cell2.setCellStyle(cellStyle);
-        cell3.setCellFormula(nFormula);
+//        XSSFCell cell1 = templateRow.createCell(4);
+//        XSSFCell cell2 = templateRow.createCell(9);
+//        XSSFCell cell3 = templateRow.createCell(13);
+//        cell1.setCellType(Cell.CELL_TYPE_STRING);
+//        cell2.setCellType(Cell.CELL_TYPE_NUMERIC);
+//        cell3.setCellType(Cell.CELL_TYPE_STRING);
+//        cell1.setCellFormula("TEXT($B$4,\"MM월 DD일\")");
+////        cell2.setCellValue(decFormat.format(secondItemVal));
+//        cell2.setCellStyle(cellStyle);
+//        cell3.setCellFormula(nFormula);
 
 
         File outputDir = new File(attach_path + output_path);
         if (!outputDir.exists()) {
           outputDir.mkdirs();
         }
-        FileOutputStream fileOut = new FileOutputStream(outputDir + "/" + firstItemVal.replaceAll("\\.","_") + ".xlsx");
+        String year = firstItemVal.split("\\.")[0];
+        String month = firstItemVal.split("\\.")[1];
+        String day = firstItemVal.split("\\.")[2];
+        FileOutputStream fileOut = new FileOutputStream(outputDir + "/Copy of 네이버 수금이체" +month+"월"+day+"일" + ".xlsx");
         templateWorkbook.write(fileOut);
         fileOut.close();
       }
