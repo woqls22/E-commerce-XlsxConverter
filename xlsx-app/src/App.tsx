@@ -15,7 +15,7 @@ import {
 import PreviewFile from "./example.png";
 import SourceFile from "./source.png";
 import axios from "axios";
-export const rootURL = "http://114.200.215.69:8000";
+export const rootURL = "http://localhost:8000"; // 수정해야됨
 export const headers = {
   "Content-Type": "application/json",
 };
