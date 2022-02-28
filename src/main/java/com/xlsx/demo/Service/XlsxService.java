@@ -46,7 +46,7 @@ public class XlsxService {
     XSSFSheet sheet = sourceWorkbook.getSheetAt(0);
     int rows = sheet.getPhysicalNumberOfRows(); // 해당 시트의 행 개수
     //source file의 row마다 순회
-    for (int rowIdx = 0; rowIdx <= rows; rowIdx++) {
+    for (int rowIdx = 1; rowIdx <= rows; rowIdx++) {
       XSSFRow row = sheet.getRow(rowIdx);
       FileInputStream template = new FileInputStream(templateFilename);
       XSSFWorkbook templateWorkbook = new XSSFWorkbook(template);
