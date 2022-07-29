@@ -1,5 +1,6 @@
 package com.xlsx.demo.Service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.*;
@@ -18,10 +19,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Service
+@Slf4j
 public class XlsxService {
   @Value("${spring.servlet.multipart.location}")
   private String attach_path;
-  private String output_path = "output/";
+  @Value("${spring.zipfile.path}")
+  private String zipFilePath;
+  @Value("${spring.output.path}")
+  private String output_path;
 
   public void convertXlsxFile(MultipartHttpServletRequest request, HttpServletRequest httpServletRequest, HttpServletResponse response) throws IOException, InvalidFormatException {
     File fileDir = new File(attach_path);
@@ -38,6 +43,7 @@ public class XlsxService {
     String sourceFilename1 = sourceMf.getOriginalFilename();
     templateFilename = attach_path + templateFilename.replaceAll(" ", "");
     sourceFilename1 = attach_path + sourceFilename1.replaceAll(" ", "");
+
     templateMf.transferTo(new File(templateFilename));
     sourceMf.transferTo(new File(sourceFilename1));
 
@@ -203,11 +209,9 @@ public class XlsxService {
     System.out.println("Remove file: " + rootFile.getPath());
     return rootFile.delete();
   }
-  public static void makeZipFromDir() throws IOException {
+  public void makeZipFromDir() throws IOException {
 //   Macbook Env
-  String dir = "/Users/leejaebeen/XlsxConverter/res/output";
-    // String dir = "C://Users//woqls//Documents//xlsxDemo//output";
-//    String dir = "/home/ubuntu/res/xlsxDemo/output";
+  String dir = zipFilePath;
     String zipName="output.zip";
     File directory = new File(dir + File.separator);
     if (!directory.isDirectory()) {
