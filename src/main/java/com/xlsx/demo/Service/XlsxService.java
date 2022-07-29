@@ -205,8 +205,8 @@ public class XlsxService {
   }
   public static void makeZipFromDir() throws IOException {
 //   Macbook Env
-//   String dir = /Users/leejaebeen/XlsxConverter/res/output;
-    String dir = "C://Users//woqls//Documents//xlsxDemo//output";
+  String dir = "/Users/leejaebeen/XlsxConverter/res/output";
+    // String dir = "C://Users//woqls//Documents//xlsxDemo//output";
 //    String dir = "/home/ubuntu/res/xlsxDemo/output";
     String zipName="output.zip";
     File directory = new File(dir + File.separator);
