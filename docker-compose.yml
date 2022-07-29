@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  react:
+    build:
+      context: ./xlsxConverterReact/xlsx-app/
+      dockerfile: Dockerfile
+    image: react-xlsx
+    container_name: xlsxConverterReact
+    ports:
+      - "3000:3000"
+
+  spring:
+    build:
+      context: ./XlsxFileConverter/
+      dockerfile: Dockerfile
+    image: spring-xlsx
+    environment:
+      - spring.zipfile.path=/XlsxConverter/res/output
+      - spring.servlet.multipart.location=/XlsxConverter/res/
+      - spring.output.path=output/
+    container_name: xlsxConverterSpring
+    ports:
+      - "8000:8000"Ï
